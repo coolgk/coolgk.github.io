@@ -1,8 +1,4 @@
-<header>
-@coolgk/mvc - a mvc framework for Node
-</header>
-<main>
-# @coolgk/mvc
+# @coolgk/mvc - a mvc framework for Node
 
 `npm install @coolgk/mvc`
 
@@ -357,4 +353,3 @@ this method routes urls like /moduleName/controllerName/action/param1/params2 to
 ### router.getModuleControllerAction() ⇒ <code>object</code>
 **Kind**: instance method of [<code>Router</code>](#Router)
 **Returns**: <code>object</code> - - {module, controller, action, originalModule, originalController, originalAction} originals are values before they are santised and transformed e.g. /module.../ConTroller/action-one -> {action: 'module', controller: 'controller', action: 'actionOne', originalModule: 'module...', originalController: 'ConTroller', originalAction: 'action-one' }
-</main>
