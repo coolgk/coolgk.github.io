@@ -33,7 +33,7 @@ The framework looks for files from the folder structure below.
 
 ### Controller
 
-The controller module must export a **"default"** property which is a class that extends the base **"Controller"** class from @coolgk/mvc/controller. Folder (module), file (controller) and method (action) names must be in lowercase without special characters except for hyphens `/[a-z\-]/` or camelCase if a request contains hyphens e.g. **action-one** is converted to **actionOne**
+The controller module must export a **"default"** property which is a class that extends the base **"Controller"** class from @coolgk/mvc/controller. Folder (module), file (controller) and method (action) names must be in lowercase without special characters except for hyphens and numbers `/[a-z0-9\-]/` or camelCase if a request contains hyphens e.g. **action-one** is converted to **actionOne**
 
 **product.js** controller example
 
