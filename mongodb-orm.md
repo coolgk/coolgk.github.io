@@ -449,7 +449,7 @@ Schema is defined in `static getSchema()` of the model class.
 
 Properties that applies to all data types.
 
-**`type`**: Data type of the field. Supported types are in the DataType property of the library.
+##### **`type`**: Data type of the field. Supported types are in the DataType property of the library.
 
 ```javascript
 const { DataType } = require('@coolgk/mongo');
@@ -463,7 +463,7 @@ const { DataType } = require('@coolgk/mongo');
 - DataType.ENUM
 - DataType.OBJECTID
 
-**`array`**: a boolean value that defines if values are arrays
+##### **`array`**: a boolean value that defines if values are arrays
 
 ```javascript
 const document = {
@@ -478,7 +478,7 @@ const schema = {
 }
 ```
 
-**`default`**: defines the default value of a field for insert and update
+##### **`default`**: defines the default value of a field for insert and update
 
 ```javascript
 const schema = {
