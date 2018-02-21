@@ -4,6 +4,11 @@ A MongoDB ORM (ORM?) javascript / typescript library that enables data validatio
 
 `npm install @coolgk/mongo`
 
+- [Feature Hightlights](#Feature-Hightlights)
+- [Documentation](#Documentation)
+  - [Basics](#Basics)
+  - [Schema](#Schema)
+
 ## Feature Hightlights
 
 ### Join
@@ -21,7 +26,7 @@ becomes
 ```javascript
 model.find({}, {
     join: [ { on: 'b_id' } ]
-})`
+})
 ```
 
 Result:
@@ -37,7 +42,7 @@ Result:
 }, { ... }, ... ]
 ```
 
-#### Right Join with Constraints
+#### Inner Join with Constraints
 
 ```sql
 SELECT * FROM a, b WHERE a.b_id = b.id AND b.b_name = 'bname1'
@@ -64,7 +69,7 @@ Result:
 }]
 ```
 
-#### Right Join on Mulitple Collections
+#### Inner Join on Mulitple Collections
 
 ```sql
 SELECT * FROM a, b, c WHERE a.b_id = b.id AND b.c_id = c.id AND c.c_name = 'cname3'
@@ -307,7 +312,7 @@ model.updateOne({
 
 #### Add
 
-Similar to Update, but without `_id` in sub documents. The script below will add an document into the `messages` array.
+Similar to Update, but without `_id` in sub documents. The script below will add a new document into the `messages` array.
 
 ```javascript
 model.updateOne({
@@ -406,7 +411,9 @@ Final Result
 
 ### Basics
 
-To use this library, you need to create a class that extends the `Mongo` property of this library and implements the `getCollectionName` and `getSchema` static methods.
+#### Model Class
+
+The model class must extend the `Mongo` property of this library and implement the `getCollectionName` and `getSchema` static methods.
 
 - `getCollectionName` must return a collection name
 - `getSchema` must return the schema of the collection (see the Schema section below)
@@ -429,6 +436,43 @@ class ModelA extends Mongo {
 }
 ```
 
+#### Class Instantiation
+
+The model class must be initiated with a `Db` instance from mongo node client. e.g. the db variable in v3.x MongoClient.connect(url, (err, client) => { const db = client.db(dbName); ... }) or in v2.x MongoClient.connect(url, (err, db) => { ... })
+
+```javascript
+const { MongoClient } = require('mongodb');
+
+MongoClient.connect('mongodb://localhost', (error, client) => {
+    const model = new ModelA({
+        db: client.db('test')
+    });
+});
+```
+
+OR
+
+```javascript
+const { MongoClient } = require('mongodb');
+
+(async () => {
+    const globalDb = await new Promise((resolve) => {
+        MongoClient.connect('mongodb://localhost', async (error, client) => {
+            const db = client.db('test');
+            resolve(db);
+        });
+    });
+
+    // ...
+    // ...
+    // ...
+
+    const modela = new ModelA({ db: globalDb });
+    const modelb = new ModelB({ db: globalDb });
+    ...
+})()
+```
+
 ### Schema
 
 Schema is defined in `static getSchema()` of the model class.
@@ -445,9 +489,9 @@ Schema is defined in `static getSchema()` of the model class.
 }
 ```
 
-#### Shared Schema Properties: `type`, `array`, `default`, `setter`
+#### Shared Schema Properties: `type`, `array`, `default`, `setter`, `required`
 
-Properties that applies to all data types.
+These Properties are valid for all data types.
 
 ##### **`type`**: Data type of the field. Supported types are in the DataType property of the library.
 
@@ -455,13 +499,13 @@ Properties that applies to all data types.
 const { DataType } = require('@coolgk/mongo');
 ```
 
-- DataType.STRING
+- [DataType.STRING](#DataType.STRING)
+- [DataType.NUMBER](#DataType.NUMBER)
+- [DataType.ENUM](#DataType.ENUM)
+- [DataType.OBJECTID](#DataType.OBJECTID)
+- [DataType.DOCUMENT](#DataType.DOCUMENT)
 - DataType.BOOLEAN
 - DataType.DATE
-- DataType.NUMBER
-- DataType.DOCUMENT
-- DataType.ENUM
-- DataType.OBJECTID
 
 ##### **`array`**: a boolean value that defines if values are arrays
 
@@ -478,18 +522,18 @@ const schema = {
 }
 ```
 
-##### **`default`**: defines the default value of a field for insert and update
+##### **`default`**: defines the default value of a field
 
 ```javascript
 const schema = {
-    tags: {
+    group: {
         type: DataType.STRING, // string type
         default: 'generic'
     }
 }
 ```
 
-**`setter`**: a callback function that transforms the value before insert and update
+##### **`setter`**: a callback function that transforms the value before insert and update
 
 `(value, document) => { return newValue; }`
 
@@ -508,7 +552,18 @@ const schema = {
 }
 ```
 
-Example
+##### **`required`**: a boolean value to define if this field is a manditory field
+
+```javascript
+const schema = {
+    email: {
+        type: DataType.STRING, // string type
+        required: true
+    }
+}
+```
+
+##### `default`, `setter`, `array`, `required` Example
 
 ```javascript
 const schema = {
@@ -518,6 +573,7 @@ const schema = {
     },
     category: {
         type: DataType.STRING,
+        required: true, // manditory field
         setter: (value, document) => { // setter callback
             document.tags = [value];
             return `cat: ${value}`;
@@ -546,6 +602,304 @@ Result
 }
 ```
 
+#### Shared Array Validation Properties: `maxItems`, `minItems`, `uniqueItems`
+
+for fields that have `array: true`
+
+- "`maxItems`": the maximum number of items in array
+- "`minItems`": the minimum number of items in array
+- "`uniqueItems`": a boolean value to define if each item in the array must be unique
+
+```javascript
+{
+    secureQuestionAnswers: {
+        type: DataType.STRING,
+        array: true,
+        minItems: 1,
+        maxItems: 3,
+        uniqueItems: true
+    }
+}
+```
+
 #### Type Specific Properties
 
+##### `DataType.ENUM`
+
+- "`enum`": array of enum values
+
+```javascript
+{
+    logLevel: {
+        type: DataType.ENUM,
+        enum: [ 'notice', 'warn', 'error' ]
+    }
+}
+```
+
+##### `DataType.STRING`
+
+- "`minLength`": minimum length of the string value
+- "`maxLength`": maximum length of the string value
+- "`pattern`": string containing a regex, the string value must match the regular expression
+
+```javascript
+{
+    email: {
+        type: DataType.STRING,
+        minLength: 10,
+        maxLength: 200,
+        pattern: '@\w+\.com$'
+    }
+}
+```
+
+##### `DataType.NUMBER`
+
+- "`minimum`": minimum value of a number
+- "`maximum`": minimum value of a number
+
+```javascript
+{
+    rating: {
+        type: DataType.NUMBER,
+        minimum: 0,
+        maximum: 10
+    }
+}
+```
+
+##### `DataType.OBJECTID`
+
+- "`model`": the class that the object id references to. This is a **required** property for `DataType.OBJECTID` type and is required by "`join`" option in `find()`
+
+```javascript
+const { Mongo, DataType } = require('@coolgk/mongo');
+
+class Category extends Mongo {
+    static getCollectionName () {
+        return 'Category';
+    }
+    static getSchema () {
+        return {
+            name: {
+                type: DataType.STRING
+            }
+        }
+    }
+}
+
+class Product extends Mongo {
+    static getCollectionName () {
+        return 'Product';
+    }
+    static getSchema () {
+        return {
+            name: {
+                type: DataType.STRING
+            },
+            category: {
+                type: DataType.OBJECTID,
+                model: Category // category class, in real code, this could be require(../models/category.js)
+            }
+        }
+    }
+}
+```
+
+##### `DataType.DOCUMENT`
+
+- "`schema`": the schema of the sub document which uses the same format as the main schema
+
+```javascript
+{
+    address: {
+        type: DataType.DOCUMENT,
+        schema: { // schema of the address sub document
+            street: {
+                type: DataType.STRING
+            },
+            postcode: {
+                type: DataType.STRING
+            },
+            country: {
+                type: DataType.OBJECTID,
+                model: Country
+            }
+        }
+    }
+}
+```
+
+### Find & Join
+
+Tested in MongoDB >= 3.x
+
+An augmented version of the `find()` function from [mongo's native driver](#http://mongodb.github.io/node-mongodb-native/3.0/api/Collection.html#find)
+
+#### `find(query, options)`
+
+##### Parameters
+
+- `query`: same as the `query` parameter in [mongo's node driver](#http://mongodb.github.io/node-mongodb-native/3.0/api/Collection.html#find)
+- `options`: all options from [mongo's node driver](#http://mongodb.github.io/node-mongodb-native/3.0/api/Collection.html#find) plus two extra properties `cursor` and `join`
+
+**`options.join`**
+
+array of join definitions
+
+```javascript
+{
+    join: [ // array of joins
+        {
+            on: ['name_of_an_object_id_field'],
+            projection: { // optional
+                [field_in_the_referenced_collection]: 1 or 0,
+                ...
+            },
+            filters: { // optional
+                // normal mongo query
+            },
+            join: { // optional
+                on: ['name_of_an_object_id_field_from_the_referenced_collection'],
+                ... // same format as the main join
+            }
+        },
+        ...
+    ]
+}
+```
+
+- `join.on`: array of object id fields that reference to a same collection. There can be multiple joins in the `join` array but when there are multiple fields reference to a same collection, these fields could be defined in the same block e.g. `createdBy` and `modifiedBy` fields both reference to the `user` collection, the on value would be `['createdBy', 'modifiedBy']`. You can still put them in separate blocks if you need to filter them differently.
+- `join.projection`: same as the `projection` option in `find()`. Fields to select from the referenced collection, 1 = select, 0 = deselect.
+- `join.filters`: same as the `query` parameter in `find()` for filter docs in the referenced collection
+- `join.join`: recursively join other collections
+
+Example
+
+```javascript
+// model a schema
+{
+    a_name: {
+        type: DataType.STRING
+    },
+    b_id: {
+        type: DataType.OBJECTID,
+        model: B
+    },
+    c_id: {
+        type: DataType.OBJECTID,
+        model: C
+    }
+}
+// model b schema
+{
+    b_name: {
+        type: DataType.STRING
+    },
+    c_id: {
+        type: DataType.OBJECTID,
+        model: C
+    }
+}
+// model c schema
+{
+    c_name: {
+        type: DataType.STRING
+    },
+    c_group: {
+        type: DataType.STRING
+    }
+}
+
+modelA.find({}, {
+    join: [
+        { // join a.b_id to b._id
+            on: ['b_id'],
+            join: [{ // join b.c_id to c._id
+                on: 'c_id',
+                filters: {
+                    c_name: 'cname3'
+                }
+            }]
+        },
+        { // join a.c_id with c._id
+            on: 'c_id',
+            projection: {
+                c_group: 1
+            }
+        }
+    ]
+});
+```
+
+Result:
+
+```javascript
+[{
+    _id: '5a8bdfc1b07af22a12cb1f0b',
+    a_name: 'aname3',
+    b_id: {
+        _id: '5a8bdfc1b07af22a12cb1f0a',
+        b_name: 'bname3',
+        c_id: {
+            _id: '5a8bdfc1b07af22a12cb1f09',
+            c_name: 'cname3',
+            c_group: 'group3'
+        }
+    },
+    c_id: {
+        _id: '5a8bdfc1b07af22a12cb1f09',
+        c_group: 'group2'
+    }
+}]
+```
+
+The query above is similar to SQL:
+
+```sql
+SELECT
+    A.*, B.*, CB.*, CA.c_group
+FROM
+    A
+JOIN
+    B ON A.b_id = B._id
+JOIN
+    C as CB ON B.c_id = C._id
+JOIN
+    C as CA ON A.c_id = C._id
+WHERE
+    CB.c_name = 'cname3'
+```
+
+**`options.cursor`**
+
+Boolean. The default value is `false`. By default, the results are returned as an array. If `cursor` is true, the items in cursor are promises instead documents. i.e. Promise<Document>
+
+```javascript
+const cursor = modelA.find({}, {
+    join: {
+        on: 'b_id'
+    },
+    cursor: true
+});
+
+cursor.forEach((documentPromise) => {
+    documentPromise.then((document) => {
+        ...
+    });
+});
+
+// OR
+
+cursor.forEach(async (documentPromise) => {
+    const document = await documentPromise;
+    ...
+});
+```
+
+
+### Validation
+
+require mongodb 3.6+
 
