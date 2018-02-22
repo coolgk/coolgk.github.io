@@ -11,10 +11,10 @@ A MongoDB ORM (ORM?) javascript / typescript library that enables data validatio
   - [Find & Join](#find--join)
   - [Insert](#insert)
   - [Update](#update)
-    - [Sub Document CRUD](#subdocumentcrud)
+    - [Sub Document CRUD](#sub-document-crud)
   - [Validation](#validation)
-  - [Native Mongo Functions](#nativemongofunctions)
-  - [Utility Method](#utilitymethod)
+  - [Native Mongo Functions](#native-mongo-functions)
+  - [Utility Method](#utility-method)
 
 ## Feature Hightlights
 
