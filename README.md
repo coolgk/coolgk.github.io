@@ -1,6 +1,6 @@
 # Node MVC framework and MongoDB ORM
 
-## @coolgk/mvc(./node-mvc.md)
+## [@coolgk/mvc](./node-mvc.md)
 
 A simple, lightweight javascript / typescript nodejs mvc framework that helps you to create object oriented, modular and testable code.
 
