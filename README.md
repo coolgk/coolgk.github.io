@@ -1,4 +1,4 @@
-# Node MVC framework and MongoDB ORM
+# A Node MVC framework and A MongoDB ORM
 
 ## [@coolgk/mvc](./node-mvc.md)
 
