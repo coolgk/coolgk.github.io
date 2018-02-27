@@ -1,6 +1,6 @@
 # @coolgk/mongo
 
-A MongoDB ORM (ORM?) javascript / typescript library that enables data validation, joins on collections and simplifies CRUD on sub / nested documents in arrays.
+A javascript / typescript MongoDB modelling library which enables joins in collections, simplifies CRUD operations for sub / nested documents and implements schema based data validation.
 
 `npm install @coolgk/mongo`
 
@@ -424,8 +424,8 @@ Final Result
 
 The model class must extend the `Mongo` property of this library and implement the `getCollectionName` and `getSchema` static methods.
 
-- `getCollectionName` must return a collection name
-- `getSchema` must return the schema of the collection (see the Schema section below)
+- **`getCollectionName()`** - must return a collection name
+- **`getSchema()`** - must return the schema of the collection (see the Schema section below)
 
 ```javascript
 const { Mongo, DataType } = require('@coolgk/mongo');
@@ -940,6 +940,8 @@ Parameters
 
 #### `updateOne(data, options)`
 
+require MongoDB >= 3.6
+
 - **`data`** - document data with or without `_id` values in sub documents
 - **`options`** - all `options` in mongo's [findOneAndUpdate()](http://mongodb.github.io/node-mongodb-native/3.0/api/Collection.html#findOneAndUpdate) plus a new `revertOnError` option
   - `options.revertOnError` - [see below](#optionsrevertonerror)
@@ -966,7 +968,7 @@ see [Sub Document CRUD](#sub-document-crud)
 
 ### Validation
 
-require mongodb 3.6+
+require MongoDB >= 3.6
 
 #### `setDbValidationSchema()`
 
@@ -1045,4 +1047,25 @@ Data Types:
 
 ```javascript
 const { GeneratedField, DataType } = require('@coolgk/mongo');
+```
+
+## Also see
+
+### [@coolgk/mvc](https://www.npmjs.com/package/@coolgk/mvc)
+
+A simple, lightweight javascript / typescript MxC framework that helps you to create object oriented, modular and testable code.
+
+### [@coolgk/utils](https://www.npmjs.com/package/@coolgk/utils)
+
+A javascript / typescript utility library. Modules: array, string, base64, ampq, bcrypt, cache, captcha, csv, email, jwt, number, pdf, tmp, token, unit conversion, url params, session, form data
+
+Report bugs here: [https://github.com/coolgk/node-mongo/issues](https://github.com/coolgk/node-mongo/issues)
+
+```
+=============================== Coverage summary ===============================
+Statements   : 96.22% ( 280/291 )
+Branches     : 90.45% ( 199/220 )
+Functions    : 95.56% ( 43/45 )
+Lines        : 96.19% ( 278/289 )
+================================================================================
 ```
